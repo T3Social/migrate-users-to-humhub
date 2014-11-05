@@ -1,5 +1,5 @@
 <?php
-  date_default_timezone_set('Asia/Jakarta');
+  //date_default_timezone_set('Asia/Jakarta');
 
   include dirname(__FILE__) . '/include_db_config.php';
   include dirname(__FILE__) . '/include_db_config_humhub.php';
@@ -23,6 +23,7 @@
   }
 
   // loop into your user database
+  // suppose you have table called users and it contains the plain password :)
   $sqlString = "SELECT * FROM users WHERE username";
   $resultUser = mysql_query($sqlString, $dbConn);
 
@@ -38,22 +39,22 @@
 
     // start to insert to humhub tables
     $sqlString = "INSERT INTO user (guid, wall_id, group_id, status, super_admin, username, email, auth_mode, created_at) VALUES ('" . $guid . "', NULL, 1, 1, 0, '" . $username . "', '" . $email . "', 'local', '" . $registerDatetime . "')";
-    mysql_query($sqlString, $dbConnComm);
+    mysql_query($sqlString, $dbConnHumHub);
 
     $lastInsertedId = mysql_insert_id();
     
     $newPassword = hash('sha512', hash('whirlpool', $plainPassword . $aSaltConstant));
 
     $sqlString = "INSERT INTO user_password (user_id, algorithm, password, salt) VALUES (" . $lastInsertedId . ", 'sha512whirlpool', '" . $newPassword . "', '1008441905544962b1ea5467.17914535')";
-    mysql_query($sqlString, $dbConnComm);
+    mysql_query($sqlString, $dbConnHumHub);
 
     $sqlString = "INSERT INTO profile (user_id, firstname) VALUES (" . $lastInsertedId . ", '" . $username . "')";
-    mysql_query($sqlString, $dbConnComm);
+    mysql_query($sqlString, $dbConnHumHub);
 
     // we assume you already have space in your humhum and we set it to that space id
     $spaceIdOnHumHub = 1;
     $sqlString = "INSERT INTO space_membership (space_id, user_id, status, invite_role, admin_role, share_role) VALUES (" . $spaceIdOnHumHub . ", " . $lastInsertedId . ", 3, 0, 0, 0)";
-    mysql_query($sqlString, $dbConnComm);
+    mysql_query($sqlString, $dbConnHumHub);
   }
 
   echo "User Migration Done!";
